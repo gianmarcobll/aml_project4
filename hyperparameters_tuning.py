@@ -180,18 +180,14 @@ def main(params):
     def optimize_agent(trial, params):
         hyperparams = prepare_hyperparams(trial, params=params)
 
-        models_dir = "./models/optuna_tuning_main_params"
-        logs_dir = "./logs"
+        logs_dir = f"./logs_{params['study_name']}"
         check_path(logs_dir)
-        check_path(models_dir)
         # initialize environments
         train_domain = params['train_domain']
         env_source = gym.make(f'CustomHopper-{train_domain}-v0')
         evaluate_domain = params['evaluate_domain']
         env_target = gym.make(f'CustomHopper-{evaluate_domain}-v0')
         
-        directory_experiments = f"./experiments_{study.study_name}/trial_{trial.number}"
-        models_dir = './models/optuna_tuning_main_params'
         model = PPO(env=env_source,
                     #clip_range_vf=0.2,
                     policy="MlpPolicy",
@@ -203,9 +199,7 @@ def main(params):
                     verbose=0,
                     device="cuda",
                     tensorboard_log=logs_dir)
-        print("print meta:", hyperparams)
 
-        model_path = create_model_path(models_dir)
         # initialize evaluation callback
         eval_callback = TrialEvalCallback(env_target, trial, n_eval_episodes=N_EVAL_EPISODES, eval_freq=EVAL_FREQ,
                                       deterministic=True)
@@ -214,18 +208,18 @@ def main(params):
         mean_reward = eval_callback.last_mean_reward
         # save best model
         if len(study.trials) == 1:
-            model.save(f"./experiments_{study.study_name}/best_model/hopper")
+            model.save(f"./experiments_{params['study_name']}/best_model/hopper")
 
         elif mean_reward > study.best_trial.value:
             print('here')
-            model.save(f"./experiments_{study.study_name}/best_model/hopper")   
+            model.save(f"./experiments_{params['study_name']}/best_model/hopper")   
         del model
         env_source.close()
         env_target.close()
         
         return mean_reward
     n_trials = 50
-    study = optuna.create_study(direction='maximize')
+    study = optuna.create_study(direction='maximize', storage=f"sqlite:///{params['study_name']}.db", study_name=params['study_name'])
     experiment = partial(optimize_agent, params=params)
     study.optimize(experiment, n_trials=n_trials, show_progress_bar=True)
     print(study.best_params)
