@@ -1,13 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Mar 24 15:20:14 2023
-
-@author: ahmadrezafrh
-"""
 import shutil
 
 from env.custom_hopper import *
+from functools import partial
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import EvalCallback, CheckpointCallback, CallbackList
 
@@ -112,43 +106,6 @@ def create_model_path(models_path):
 
     return new_path
 
-def create_callback(env, callback_types, save_path, logs_dir, checkpoint_freq, eval_freq):
-    """
-    Creates a list of callbacks we want to use in our model
-    
-    :param env: env
-    :param callback_types: we can have two types of callbacks ('eval', 'checkpoint')
-    :param save_path: where to save callbacked models
-    :param logs_dir: where to save logs
-    :param checkpoint_freq: frequency of saving a model with 'checkpoint' callback
-    :param eval_freq: frequency of checking and evaluating the model for best results
-    
-    :type env: object
-    :type callback_types: list of strs
-    :type save_path: str
-    :type logs_dir: str
-    :type checkpoint_freq: int
-    :type eval_freq: int
-
-    :return: list of callbacks
-    """
-    callbacks = []
-    for cb in callback_types:
-        if cb=='eval':
-            callback = EvalCallback(env, best_model_save_path=save_path,
-                                 log_path=logs_dir, eval_freq=eval_freq,
-                                 deterministic=True, render=False)
-        elif cb=='checkpoint':
-            callback = CheckpointCallback(save_freq=checkpoint_freq, save_path=save_path)
-    
-        else:
-            raise NameError("the callback types are not supported")
-        
-        callbacks.append(callback)
-    
-           
-    return CallbackList(callbacks)
-
 class TrialEvalCallback(EvalCallback):
     """Callback used for evaluating and reporting a trial."""
 
@@ -184,9 +141,8 @@ class TrialEvalCallback(EvalCallback):
         return True
 
 
-def main():
+def main(params):
     '''
-    
     Another approach for hyperparameter tuning is using optuna.
     this approach have been supported by the the stable_baselines3.
     
@@ -211,86 +167,51 @@ def main():
     domain randomization optimization with this approach)
         
     '''
-    def prepare_hyperparams(trial):
+    def prepare_hyperparams(trial, params):
         hyperparams = {}
         search_space = search_spaces
 
-        params_search_space = search_space['source']['ppo'].items()
+        params_search_space = search_space[params['train_domain']]['ppo'].items()
 
         for param_name, value in params_search_space:
             hyperparams[param_name] = trial._suggest(param_name, value)
-        return hyperparams
+        return hyperparams 
     
-    
-    def optimize_agent(trial):
-        hyperparams = prepare_hyperparams(trial)
+    def optimize_agent(trial, params):
+        hyperparams = prepare_hyperparams(trial, params=params)
 
         models_dir = "./models/optuna_tuning_main_params"
         logs_dir = "./logs"
         check_path(logs_dir)
         check_path(models_dir)
-        callback_types =["eval", "checkpoint"]
-        checkpoint_freq = 5e5
-        eval_freq = 1e4
-        callback_logs_dir = os.path.join(logs_dir, "results")
-        meta = {
-            'env' : "CustomHopper-source-v0",     
-            'alg' : "ppo",
-            'policy' : "MlpPolicy",
-             
-            # 'domain_randomization' : configue['domain_randomization'],
-            # 'chosen_domain' : hp['chosen_domain'] if configue['domain_randomization'] else None,
-            
-            # 'stacked' : configue['stacked'] if configue["obs"]=='cnn' else None,
-            # 'gray_scale' : configue['gray_scale'] if configue["obs"]=='cnn' else None,
-            # 'smooth' : hp['smooth'] if configue["obs"]=='cnn' else None,
-            # 'resize' : configue['resize'] if configue["obs"]=='cnn' else None,
-            # 'resize_shape' : [hp['resize_shape'], hp['resize_shape']] if configue["obs"]=='cnn' and configue['resize'] else None,
-            # 'preprocess' : hp['preprocess'] if configue["obs"]=='cnn' else None,
-            # 'n_frame_stacks' : hp['n_frame_stacks'] if configue["obs"]=='cnn' else None,
-            # "policy_kwargs" : hp['policy_kwargs'] if configue["obs"]=='cnn' else None,
-            
-            
-            'learning_rate' : hyperparams['learning_rate'],
-            'gamma' : hyperparams['gamma'],
-            'clip_range' : hyperparams['clip_range'],
-            'ent_coef' : hyperparams['ent_coef'],
-            'gae_lambda' : hyperparams['gae_lambda'],
-        }        
+        # initialize environments
+        train_domain = params['train_domain']
+        env_source = gym.make(f'CustomHopper-{train_domain}-v0')
+        evaluate_domain = params['evaluate_domain']
+        env_target = gym.make(f'CustomHopper-{evaluate_domain}-v0')
         
-        env = create_env(meta)
         directory_experiments = f"./experiments_{study.study_name}/trial_{trial.number}"
-        other_params = {
-            'tensorboard_log': directory_experiments,
-            'policy': 'MlpPolicy',  # policy alias
-            'env': env
-        }
         models_dir = './models/optuna_tuning_main_params'
-        model = PPO(env=env,
+        model = PPO(env=env_source,
                     #clip_range_vf=0.2,
-                    policy=meta['policy'],
-                    learning_rate=meta['learning_rate'],
-                    gamma=meta['gamma'],
-                    clip_range=meta['clip_range'],
-                    ent_coef=meta['ent_coef'],
-                    gae_lambda=meta['gae_lambda'],
+                    policy="MlpPolicy",
+                    learning_rate=hyperparams['learning_rate'],
+                    gamma=hyperparams['gamma'],
+                    clip_range=hyperparams['clip_range'],
+                    ent_coef=hyperparams['ent_coef'],
+                    gae_lambda=hyperparams['gae_lambda'],
                     verbose=0,
                     device="cuda",
                     tensorboard_log=logs_dir)
-        print("print meta:", meta)
+        print("print meta:", hyperparams)
 
         model_path = create_model_path(models_dir)
         # initialize evaluation callback
-        eval_callback = TrialEvalCallback(env, trial, n_eval_episodes=N_EVAL_EPISODES, eval_freq=EVAL_FREQ,
+        eval_callback = TrialEvalCallback(env_target, trial, n_eval_episodes=N_EVAL_EPISODES, eval_freq=EVAL_FREQ,
                                       deterministic=True)
 
-        
-
         model.learn(total_timesteps=N_TIMESTEPS, progress_bar=True, callback=eval_callback)
-        
-
         mean_reward = eval_callback.last_mean_reward
-
         # save best model
         if len(study.trials) == 1:
             model.save(f"./experiments_{study.study_name}/best_model/hopper")
@@ -299,15 +220,16 @@ def main():
             print('here')
             model.save(f"./experiments_{study.study_name}/best_model/hopper")   
         del model
-        env.close()
+        env_source.close()
+        env_target.close()
         
         return mean_reward
-    
-
     n_trials = 50
     study = optuna.create_study(direction='maximize')
-    study.optimize(optimize_agent, n_trials=n_trials, n_jobs=1)
+    experiment = partial(optimize_agent, params=params)
+    study.optimize(experiment, n_trials=n_trials, show_progress_bar=True)
     print(study.best_params)
             
-if __name__ == '__main__':
-    main()
+def run_hpo(params):
+    print("Running optuna tuning with params:", params)
+    main(params)

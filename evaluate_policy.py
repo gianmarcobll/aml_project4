@@ -6,10 +6,6 @@ import gym
 
 N_EVAL_EPISODES = 100
 
-from gym.wrappers.pixel_observation import PixelObservationWrapper
-from gym.wrappers.resize_observation import ResizeObservation
-from gym.wrappers.frame_stack import FrameStack
-from gym.wrappers.gray_scale_observation import GrayScaleObservation
 from env.custom_hopper import *
 
 def evaluate_policy(params):
