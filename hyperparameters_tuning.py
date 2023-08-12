@@ -171,6 +171,9 @@ def main(params):
         hyperparams = {}
         search_space = search_spaces
 
+        if params['udr_enable']:
+            search_space = search_spaces_udr
+
         params_search_space = search_space[params['train_domain']]['ppo'].items()
 
         for param_name, value in params_search_space:
