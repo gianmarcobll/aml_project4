@@ -2,8 +2,7 @@ import shutil
 
 from env.custom_hopper import *
 from functools import partial
-from stable_baselines3.common.evaluation import evaluate_policy
-from stable_baselines3.common.callbacks import EvalCallback, CheckpointCallback, CallbackList
+from stable_baselines3.common.callbacks import EvalCallback
 
 from policy_gradient import *
 
@@ -70,42 +69,6 @@ def create_env(meta, env=None):
         
     return env
 
-def create_model_path(models_path):
-    """
-    create path for the current model.
-    
-    :param models_path: path to all of the models
-    :type models_path: 'str'
-    :return: model path
-    """
-    paths = []
-    
-    for file in os.listdir(models_path):
-        if os.path.isdir(os.path.join(models_path, file)):
-            paths.append(int(file.split('_')[-1]))
-    
-    if len(paths) == 0:
-        model_num = 1
-        new_path = os.path.join(models_path, f'model_{model_num}')
-    else:
-        
-        model_num = max(paths)
-        model_path = os.path.join(models_path, f'model_{model_num}')
-        count = 0
-        for file in os.listdir(model_path):
-            if os.path.isfile(os.path.join(model_path, file)):
-                count += 1
-
-        if count == 1:
-            shutil.rmtree(model_path)
-            new_path = model_path
-            
-        else:
-            new_path = os.path.join(models_path, f'model_{model_num+1}')
-                
-
-    return new_path
-
 class TrialEvalCallback(EvalCallback):
     """Callback used for evaluating and reporting a trial."""
 
@@ -142,31 +105,6 @@ class TrialEvalCallback(EvalCallback):
 
 
 def main(params):
-    '''
-    Another approach for hyperparameter tuning is using optuna.
-    this approach have been supported by the the stable_baselines3.
-    
-    In this method we can choose n number of trials, and the model
-    will be trained for n set of hyper parameters (all hyperparameters
-    chosen randomly with a uniform distribution). 
-    
-    In brute force approach optimization (train.py), due to the hardware
-    limitation, it is not possible to train with all possible set of hyperparameters.
-    Therefore, we use a set of randomized hyperparameters chosen with a ubiform
-    distribution.
-    
-    The reason we do this approach is because of the high sensitivity of RL models
-    to hyperparameters.
-    
-    We use the best hyperparameters extracted from MLP and use it in CNN. However,
-    it is better to optimize CNN seperately but due to the limtation of the software we 
-    just optimize the paramaeters of the MLP's network.
-    
-    Finally, for domain randomization we just define multiple distribution and we use them
-    to optimize the network with hypereparameters extracted above. (we do not consider
-    domain randomization optimization with this approach)
-        
-    '''
     def prepare_hyperparams(trial, params):
         hyperparams = {}
         search_space = search_spaces
