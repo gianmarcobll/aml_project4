@@ -180,7 +180,7 @@ def main(params):
     def optimize_agent(trial, params):
         hyperparams = prepare_hyperparams(trial, params=params)
 
-        logs_dir = f"./logs_{params['study_name']}"
+        logs_dir = f"./experiments/experiments_{params['study_name']}/logs_{params['study_name']}"
         check_path(logs_dir)
         # initialize environments
         train_domain = params['train_domain']
@@ -189,7 +189,6 @@ def main(params):
         env_target = gym.make(f'CustomHopper-{evaluate_domain}-v0')
         
         model = PPO(env=env_source,
-                    #clip_range_vf=0.2,
                     policy="MlpPolicy",
                     learning_rate=hyperparams['learning_rate'],
                     gamma=hyperparams['gamma'],
@@ -208,21 +207,33 @@ def main(params):
         mean_reward = eval_callback.last_mean_reward
         # save best model
         if len(study.trials) == 1:
-            model.save(f"./experiments_{params['study_name']}/best_model/hopper")
+            model.save(f"./experiments/experiments_{params['study_name']}/best_model/hopper")
 
         elif mean_reward > study.best_trial.value:
             print('here')
-            model.save(f"./experiments_{params['study_name']}/best_model/hopper")   
+            model.save(f"./experiments/experiments_{params['study_name']}/best_model/hopper")   
         del model
         env_source.close()
         env_target.close()
         
         return mean_reward
+    
     n_trials = 50
-    study = optuna.create_study(direction='maximize', storage=f"sqlite:///{params['study_name']}.db", study_name=params['study_name'])
+    eperiment_path = f"./experiments/experiments_{params['study_name']}"
+    check_path(eperiment_path)
+    storage_url = f"sqlite:///{eperiment_path}/{params['study_name']}.db"
+    study = optuna.create_study(direction='maximize', storage=storage_url, study_name=params['study_name'])
     experiment = partial(optimize_agent, params=params)
     study.optimize(experiment, n_trials=n_trials, show_progress_bar=True)
-    print(study.best_params)
+    
+    print("Top 10 trials")
+    saved_study = optuna.load_study(study_name=params['study_name'], storage=storage_url)
+    trials = sorted(saved_study.trials, key=lambda t:t.value, reverse=True)
+    for i in range(10):
+        print("Trial number:", trials[i].number)
+        print("Trial value", trials[i].value)
+        print("Trial hyperparameters", trials[i].params)
+        print()
             
 def run_hpo(params):
     print("Running optuna tuning with params:", params)
