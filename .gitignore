@@ -1,0 +1,5 @@
+*.pyc
+__pycache__
+*/__pycache__
+*egg-info
+experiments/vision_based/model.zip

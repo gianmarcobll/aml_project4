@@ -3,7 +3,7 @@ import argparse
 import sys
 import numpy as np
 from hyperparameters_tuning import run_hpo
-# from evaluate_policy import evaluate_policy
+from evaluate_policy import evaluate_policy
 
 logger = None
 seed = 0
@@ -60,7 +60,7 @@ if __name__ == '__main__':
                 'model_path': args.model_path,
                 'vision_based': args.vision_based
             }
-            # evaluate_policy(params)
+            evaluate_policy(params)
 
         case 'train-vision-based':
             print("Not implemented!")
