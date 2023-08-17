@@ -2,4 +2,6 @@
 __pycache__
 */__pycache__
 *egg-info
+
+#Files excluded because they are too big
 experiments/vision_based/model.zip

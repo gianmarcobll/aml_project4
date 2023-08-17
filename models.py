@@ -26,3 +26,18 @@ class CNN(BaseFeaturesExtractor):
 
     def forward(self, observations: th.Tensor) -> th.Tensor:
         return self.linear(self.cnn(observations))
+    
+from torchvision.models import resnet18, ResNet18_Weights
+
+class ResNet18(BaseFeaturesExtractor):
+    def __init__(self, observation_space: spaces.Box, features_dim: int = 64):
+        super().__init__(observation_space, features_dim)
+        print("Init ResNet18")
+        weights = ResNet18_Weights
+
+        self.resnet = resnet18(weights=weights)
+        num_ftrs = self.resnet.fc.in_features
+        self.resnet.fc = nn.Linear(in_features=num_ftrs, out_features=features_dim)
+
+    def forward(self, observations: th.Tensor) -> th.Tensor:
+        return self.resnet(observations)
