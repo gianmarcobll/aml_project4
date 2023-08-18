@@ -1,0 +1,75 @@
+LR: 0.001 TE: 100000
+Source-Source environment results:(1426.0486111545563, 46.9674822246047)
+Source-Target environment results:(1451.7265476679802, 121.71425253546826)
+Target-Target environment results:(1185.695855693817, 279.63408845531916)
+
+LR: 0.001 TE: 250000
+Source-Source environment results:(1510.6703080415725, 6.793644572570443)
+Source-Target environment results:(826.6419668769836, 7.88798598036376)
+Target-Target environment results:(1520.4867204928398, 11.098152196348089)
+
+LR: 0.001 TE: 500000
+Source-Source environment results:(1682.7995712399484, 128.48894300230467)
+Source-Target environment results:(854.2257305455208, 42.73259265276823)
+Target-Target environment results:(1680.0910684669018, 10.384162771305133)
+
+LR: 0.0003 TE: 100000
+Source-Source environment results:(1097.1260331130027, 211.70339419711553)
+Source-Target environment results:(1124.8723716378213, 319.31042454394054)
+Target-Target environment results:(708.8782261371613, 20.37958237001412)
+
+LR: 0.0003 TE: 250000
+Source-Source environment results:(1478.0398440909385, 57.847086356237895)
+Source-Target environment results:(1490.3677169513703, 62.99904824663194)
+Target-Target environment results:(824.7453362941742, 5.428079658547219)
+
+LR: 0.0003 TE: 500000
+Source-Source environment results:(1379.117962563038, 142.24303213489867)
+Source-Target environment results:(1209.3813555932045, 156.2073517187107)
+Target-Target environment results:(1621.6094317746163, 1.5815552902299306)
+
+LR: 0.0001 TE: 100000
+Source-Source environment results:(224.9165754342079, 54.554306354442915)
+Source-Target environment results:(386.64028091192245, 4.094104526551135)
+Target-Target environment results:(393.711622171402, 29.59320833808348)
+
+LR: 0.0001 TE: 250000
+Source-Source environment results:(512.1694587755203, 297.03708161537)
+Source-Target environment results:(634.4592456007003, 56.370051361801146)
+Target-Target environment results:(435.7409408760071, 60.09802045209805)
+
+LR: 0.0001 TE: 500000
+Source-Source environment results:(987.041649312973, 239.20782114495697)
+Source-Target environment results:(929.5926583600044, 122.85194182064382)
+Target-Target environment results:(645.8464606595039, 39.65186060332335)
+
+LR: 1e-05 TE: 100000
+Source-Source environment results:(176.72395344257356, 0.8064121183396715)
+Source-Target environment results:(179.58381794214247, 1.7606306289621596)
+Target-Target environment results:(200.11658189058303, 2.4456479351334384)
+
+LR: 1e-05 TE: 250000
+Source-Source environment results:(173.50874868154526, 1.0178273986967772)
+Source-Target environment results:(175.2408028149605, 1.1809774570704887)
+Target-Target environment results:(179.5586894893646, 1.5392414645666983)
+
+LR: 1e-05 TE: 500000
+Source-Source environment results:(221.5096281695366, 128.50641909693093)
+Source-Target environment results:(484.7364196228981, 52.810253194922936)
+Target-Target environment results:(287.36033425807955, 17.321020716077363)
+
+LR: 1e-06 TE: 100000
+Source-Source environment results:(76.91006003260613, 1.3132907277375003)
+Source-Target environment results:(80.86055756568909, 1.2488466793659474)
+Target-Target environment results:(84.17148583173751, 1.4976751427138781)
+
+LR: 1e-06 TE: 250000
+Source-Source environment results:(55.00583179473877, 0.6748444161628854)
+Source-Target environment results:(56.02231202721596, 1.0459001159525974)
+Target-Target environment results:(59.94618855953217, 1.0357003305578414)
+
+LR: 1e-06 TE: 500000
+Source-Source environment results:(58.650308549404144, 4.255564610627842)
+Source-Target environment results:(67.64407673835754, 5.900055790007139)
+Target-Target environment results:(61.50156970620155, 4.516946180051873)
+
