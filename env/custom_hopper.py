@@ -16,45 +16,18 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
-        self.coeff_gravity = None
-        self.coeff_thick = None
-        self.coeff_friction = None
-        self.coeff_masses = None
         self.udr_training = False
-        self.extended_udr_training = False
 
         self.original_masses = np.copy(self.sim.model.body_mass[1:])  # Default link masses
         self.udr_dim = self.original_masses.shape[0] - 1  # Number of links
         self.min_udr = np.zeros(self.udr_dim)  # Lower bound of domain randomization distribution
         self.max_udr = np.zeros(self.udr_dim)  # Upper bound of domain randomization distribution
 
-        self.original_geom_friction = np.copy(self.sim.model.geom_friction)
-        self.original_geom_size = np.copy(self.sim.model.geom_size)
-        self.original_gravity = np.copy(self.sim.model.opt.gravity[2])
-
-        self.stats_masses = []
-        self.stats_friction = []
-        self.stats_gravity = []
-        self.stats_thickness = []
-
         if domain == 'source':  # Source environment has an imprecise torso mass (1kg shift)
             self.sim.model.body_mass[1] -= 1.0
 
-    def record_stats(self):
-        self.stats_masses.append(np.copy(self.sim.model.body_mass[2:]))
-        if self.extended_udr_training:
-            self.stats_friction.append(np.copy(self.sim.model.geom_friction))
-            self.stats_gravity.append(np.copy(self.sim.model.opt.gravity[2]))
-            self.stats_thickness.append(np.copy(self.sim.model.geom_size))
-
-    def get_stats(self):
-        return self.stats_masses, self.stats_friction, self.stats_gravity, self.stats_thickness
-
     def set_udr_training(self, flag):
         self.udr_training = flag
-
-    def set_extended_udr_training(self, flag):
-        self.extended_udr_training = flag
 
     def get_udr_training(self):
         return self.udr_training
@@ -68,46 +41,6 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
             self.min_udr[i] = bounds[2 * i]
             self.max_udr[i] = bounds[2 * i + 1]
         return
-
-    def set_extended_udr_coefficient(self, coeff_masses, coeff_friction, coeff_thick, coeff_gravity):
-        self.coeff_masses = coeff_masses
-        self.coeff_friction = coeff_friction
-        self.coeff_thick = coeff_thick
-        self.coeff_gravity = coeff_gravity
-
-    def set_random_extended_parameters(self):
-
-        # masses
-        self.sim.model.body_mass[2] = np.random.uniform(self.sim.model.body_mass[2] * (1 - 0.5 * self.coeff_masses),
-                                                        self.sim.model.body_mass[2] * (1 + 0.5 * self.coeff_masses))
-        self.sim.model.body_mass[3] = np.random.uniform(self.sim.model.body_mass[3] * (1 - 0.5 * self.coeff_masses),
-                                                        self.sim.model.body_mass[3] * (1 + 0.5 * self.coeff_masses))
-        self.sim.model.body_mass[4] = np.random.uniform(self.sim.model.body_mass[4] * (1 - 0.5 * self.coeff_masses),
-                                                        self.sim.model.body_mass[4] * (1 + 0.5 * self.coeff_masses))
-
-        # gravity
-        self.sim.model.opt.gravity[2] = np.random.uniform(
-            self.sim.model.opt.gravity[2] * (1 - 0.5 * self.coeff_gravity),
-            self.sim.model.opt.gravity[2] * (1 + 0.5 * self.coeff_gravity))
-        # thickness
-        for i in range(1, len(self.sim.model.geom_size)):
-            self.sim.model.geom_size[i, 0] = np.random.uniform(
-                self.sim.model.geom_size[i, 0] * (1 - 0.5 * self.coeff_thick),
-                self.sim.model.geom_size[i, 0] * (1 + 0.5 * self.coeff_thick))
-
-        # friction
-        for i in range(1, len(self.sim.model.geom_friction)):
-            self.sim.model.geom_friction[i, 0] = np.random.uniform(
-                self.sim.model.geom_friction[i, 0] * (1 - 0.5 * self.coeff_friction),
-                self.sim.model.geom_friction[i, 0] * (1 + 0.5 * self.coeff_friction))
-
-            self.sim.model.geom_friction[i, 1] = np.random.uniform(
-                self.sim.model.geom_friction[i, 1] * (1 - 0.5 * self.coeff_friction),
-                self.sim.model.geom_friction[i, 1] * (1 + 0.5 * self.coeff_friction))
-
-            self.sim.model.geom_friction[i, 2] = np.random.uniform(
-                self.sim.model.geom_friction[i, 2] * (1 - 0.5 * self.coeff_friction),
-                self.sim.model.geom_friction[i, 2] * (1 + 0.5 * self.coeff_friction))
 
     def get_udr_distribution(self):
         return self.min_udr, self.max_udr
@@ -159,9 +92,6 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.set_state(qpos, qvel)
         if self.udr_training:
             self.set_random_parameters()
-        if self.extended_udr_training:
-            self.set_random_extended_parameters()
-        self.record_stats()
         return self._get_obs()
 
     def viewer_setup(self):

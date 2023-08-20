@@ -1,6 +1,3 @@
-"""Sample script for training a control policy on the Hopper environment, using PPO algorithm.
-We are searching for the optimal value for the learning rate
-"""
 import gym
 from env.custom_hopper import *
 from stable_baselines3 import PPO
@@ -21,7 +18,7 @@ def main():
     f = open("./results/training_ppo_results.txt", "a")
     for lr in learning_rates:
         for te in training_episodes:
-            print(f"--- Training PPO on SOURCE environment (Learning Rate = {lr})--- Training episodes = {te} ")      
+            print(f"--- Training PPO on SOURCE environment (Learning Rate = {lr}--- Training episodes = {te})")      
             if os.path.exists(f"training/models/PPO/source_LR_{i}_TE_{te}.zip"):
                 print("Found source model!")
                 model = PPO.load(f"training/models/PPO/source_LR_{i}_TE_{te}", env=env)
@@ -30,7 +27,7 @@ def main():
                 model = PPO("MlpPolicy", env, verbose = 1, learning_rate = lr)
                 model.learn(total_timesteps = te, progress_bar = True)
                 model.save(f"training/models/PPO/source_LR_{i}_TE_{te}")
-            print(f"--- Training PPO on TARGET environment (Learning Rate = {lr})--- Training episodes = {te} ")
+            print(f"--- Training PPO on TARGET environment (Learning Rate = {lr}--- Training episodes = {te})")
             if os.path.exists(f"training/models/PPO/target_LR_{i}_TE_{te}.zip"):
                 print("Found target model!")
                 model_target = PPO.load(f"training/models/PPO/target_LR_{i}_TE_{te}", env=target_env)
