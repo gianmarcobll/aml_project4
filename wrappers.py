@@ -1,5 +1,4 @@
-from gym import ObservationWrapper, spaces
-import numpy as np
+from gym import ObservationWrapper
 
 class ImageObservationWrapper(ObservationWrapper):
     def __init__(self, env):

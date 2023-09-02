@@ -58,7 +58,7 @@ def train_vision_based(params):
         )
     elif params['vision_based_model'] == "resnet18":
         policy_kwargs = dict(
-            features_extractor_class=CustomResNet18, # to use other model: CustomCNN
+            features_extractor_class=CustomResNet18, # to use other model: CustomResNet18
             features_extractor_kwargs=dict(features_dim = 128), # was 128 in oldcnn
         )
     if os.path.exists(f"./training/models/vision_based/{params['vision_based_model']}_LR_{lr}" + udr + ".zip"):
